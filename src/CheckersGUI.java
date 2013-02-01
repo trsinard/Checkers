@@ -71,10 +71,7 @@ public class CheckersGUI extends Frame implements ActionListener, ItemListener,
 		setVisible(true);
 		this.setLocation(50, 50);
 		new GUIMouseEventListener(this, boardPanel);
-<<<<<<< HEAD
-		rescale(.80);
-=======
-		
+
 		showStartPanel = true;
 		BufferedImage image = ThemeManager.getThemeManager().getImage("title");
 		boardCanvas.addDrawable("title", new Graphic(image, 0, 0, new Dimension(image.getWidth(), image.getHeight())));
@@ -82,9 +79,7 @@ public class CheckersGUI extends Frame implements ActionListener, ItemListener,
 		bannerCanvas.addDrawable("barebanner", new Graphic(image, 0, 0, new Dimension(image.getWidth(), image.getHeight())));
 		
 		
-		
 		rescale(.50);
->>>>>>> Checkpoint - Bug Fixes, Title Graphics Added ...
 	}
 	
 	public boolean isShowingStart(){
