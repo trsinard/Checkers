@@ -11,12 +11,16 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+import java.util.Enumeration;
 import java.util.Iterator;
 
+import javax.swing.AbstractButton;
+import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.KeyStroke;
 
 public class CheckersGUI extends Frame implements ActionListener, ItemListener,
@@ -40,6 +44,7 @@ public class CheckersGUI extends Frame implements ActionListener, ItemListener,
 	private JMenuItem undoAction;
 	private JCheckBox guideButton;
 	private JCheckBox forceJumpButton;
+	private ButtonGroup gTypeGroup;
 	
 	private double guiRatio;
 	
@@ -65,6 +70,7 @@ public class CheckersGUI extends Frame implements ActionListener, ItemListener,
 		GUIContainer = this.getContentPane();
 		GUIContainer.add(boardPanel, BorderLayout.CENTER);
 		GUIContainer.add(scoreBoardPanel, BorderLayout.NORTH);
+		this.addKeyListener(new Keyboard(this));
 		
 		buildMenuBar();
 		
@@ -105,17 +111,32 @@ public class CheckersGUI extends Frame implements ActionListener, ItemListener,
 		if(source == forceJumpButton){
 			if (e.getStateChange() == ItemEvent.DESELECTED) {
 				settingsManager.setForceJumps(false);
-				if(currentGame != null){
-					newGame(currentGame.getGameType());
-				}
 			} else if (e.getStateChange() == ItemEvent.SELECTED) {
 				settingsManager.setForceJumps(true);
-				if(currentGame != null){
-					newGame(currentGame.getGameType());
-				}
 			}
 			if(currentGame != null){
-				currentGame.updateAvailableMoves();
+				newGame(currentGame.getGameOpponent(), settingsManager.getGameType());
+			}
+		}
+		boolean typeChange = false;
+		for(Enumeration<AbstractButton> buttons = gTypeGroup.getElements(); buttons.hasMoreElements();) {
+			AbstractButton button = buttons.nextElement();
+			if(source == button){
+				if(button.getText() == "Regular" && e.getStateChange() == ItemEvent.SELECTED){
+					settingsManager.setGameType(GameType.REGULAR);
+					typeChange = true;
+				} else if(button.getText() == "Reverse" && e.getStateChange() == ItemEvent.SELECTED){
+					forceJumpButton.setSelected(true);
+					forceJumpButton.setEnabled(false);
+					settingsManager.setGameType(GameType.REVERSE);
+					typeChange = true;
+				}
+				if(button.getText() == "Reverse" && e.getStateChange() == ItemEvent.DESELECTED){
+					forceJumpButton.setEnabled(true);
+				}
+				if(currentGame != null && typeChange){
+					newGame(currentGame.getGameOpponent(), settingsManager.getGameType());
+				}
 			}
 		}
 		repaint();
@@ -124,13 +145,13 @@ public class CheckersGUI extends Frame implements ActionListener, ItemListener,
 	public void actionPerformed(ActionEvent ae) {
 		String[] parse = ae.getActionCommand().split(":");
 		if (parse[0].equals("TwoPlayers")) {
-			newGame(GameType.TWO_PLAYERS);
+			newGame(GameOpponent.PLAYER, settingsManager.getGameType());
 		} else if (parse[0].equals("aiEasy")) {
-			newGame(GameType.AI_EASY);
+			newGame(GameOpponent.AI_EASY, settingsManager.getGameType());
 		} else if (parse[0].equals("aiMedium")) {
-			newGame(GameType.AI_MEDIUM);
+			newGame(GameOpponent.AI_MEDIUM, settingsManager.getGameType());
 		} else if (parse[0].equals("aiHard")) {
-			newGame(GameType.AI_HARD);
+			newGame(GameOpponent.AI_HARD, settingsManager.getGameType());
 		} else if (parse[0].equals("THEMES")) {
 			try {
 				updateTheme(parse[1]);
@@ -238,6 +259,8 @@ public class CheckersGUI extends Frame implements ActionListener, ItemListener,
 		fileMenu.setMnemonic(KeyEvent.VK_G);
 		fileMenu.add(buildGameTypeSubMenu());
 
+		fileMenu.add(buildModeMenu());
+		fileMenu.addSeparator();
 		undoAction = new JMenuItem("Undo");
 		undoAction.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z,
 				ActionEvent.CTRL_MASK));
@@ -311,6 +334,26 @@ public class CheckersGUI extends Frame implements ActionListener, ItemListener,
 		return optionMenu;
 
 	}
+	
+	private JMenu buildModeMenu(){
+		JMenu modeMenu = new JMenu("Mode");
+		modeMenu.setMnemonic(KeyEvent.VK_M);
+		
+		gTypeGroup = new ButtonGroup();
+		JRadioButtonMenuItem item = new JRadioButtonMenuItem("Regular");
+		item.setSelected(true);
+		item.addItemListener(this);
+		gTypeGroup.add(item);
+		modeMenu.add(item);
+		item.setActionCommand("MODE:Regular");
+		item = new JRadioButtonMenuItem("Reverse");
+		gTypeGroup.add(item);
+		modeMenu.add(item);
+		item.addItemListener(this);
+		item.setActionCommand("MODE:Reverse");
+		
+		return modeMenu;
+	}
 
 	private JMenu buildThemeMenu() {
 		JMenu themeMenu = new JMenu("Themes");
@@ -333,7 +376,7 @@ public class CheckersGUI extends Frame implements ActionListener, ItemListener,
 		return themeMenu;
 	}
 
-	public void newGame(GameType type) {
+	public void newGame(GameOpponent opponent, GameType type) {
 
 		if(showStartPanel){
 			this.scoreBoardPanel.setDrawable(scoreBoard);
@@ -342,7 +385,7 @@ public class CheckersGUI extends Frame implements ActionListener, ItemListener,
 			showStartPanel = false;
 			
 		}
-		currentGame = new CheckersGame(type, settingsManager);
+		currentGame = new CheckersGame(opponent, type, settingsManager);
 		boardCanvas.addDrawable("board", getCurrentGame().getGameBoard());
 		currentGame.addStateListener(this.scoreBoard);
 		currentGame.addStateListener(this);
@@ -376,7 +419,7 @@ public class CheckersGUI extends Frame implements ActionListener, ItemListener,
 	}
 
 	@Override
-	public void gameOver(BlockOccupant player) {
+	public void gameOver(CheckersGame game, BlockOccupant player) {
 		// TODO Auto-generated method stub
 		
 	}

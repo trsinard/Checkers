@@ -11,6 +11,7 @@ public class GameBlock implements Drawable {
 	private boolean hover;
 	private boolean highlightAsMove;
 	private boolean highlightAsTarget;
+	private boolean disabled;
 	private int loc_x;
 	private int loc_y;
 	private int pos_x;
@@ -26,6 +27,7 @@ public class GameBlock implements Drawable {
 		this.hover = false;
 		this.highlightAsTarget = false;
 		this.highlightAsTarget = false;
+		this.disabled = false;
 		this.loc_x = loc_x;
 		this.loc_y = loc_y;
 		this.pos_x = -1;
@@ -72,6 +74,10 @@ public class GameBlock implements Drawable {
 	
 	public boolean isHighlightAsTarget(){
 		return highlightAsTarget;
+	}
+	
+	public boolean isDisabled(){
+		return disabled;
 	}
 
 	public String getID() {
@@ -139,6 +145,10 @@ public class GameBlock implements Drawable {
 		this.highlightAsTarget = bool;
 	}
 	
+	public void setDisabled(boolean bool){
+		this.disabled = bool;
+	}
+	
 	public void setOccupant(BlockOccupant occupant) {
 		this.occupant = occupant;
 	}
@@ -176,7 +186,7 @@ public class GameBlock implements Drawable {
 			
 			g.drawImage(image, pos_x, pos_y, (int) Math.round(scaledWidth),
 					(int) Math.round(scaledHeight), null);
-			image = tm.getImage("ps");
+			image = tm.getImage("block-selected");
 			if (image != null && isSelected()) {
 				g.drawImage(image, pos_x, pos_y, (int) Math.round(scaledWidth),
 						(int) Math.round(scaledHeight), null);
@@ -184,7 +194,7 @@ public class GameBlock implements Drawable {
 		} 
 		
 		
-		image = tm.getImage("am");
+		image = tm.getImage("block-available");
 		scaledWidth = image.getWidth() * sd.getScaleRatio();
 		scaledHeight = image.getHeight() * sd.getScaleRatio();
 		this.newSize = new Dimension((int) (Math.round(scaledWidth)),
@@ -195,16 +205,20 @@ public class GameBlock implements Drawable {
 			g.drawImage(image, pos_x, pos_y, (int) Math.round(scaledWidth), (int) Math.round(scaledHeight), null);
 		}
 		
-		image = tm.getImage("mt");
+		image = tm.getImage("block-target");
 		if(image != null && isHighlightAsTarget()) {
 			g.drawImage(image, pos_x, pos_y, (int) Math.round(scaledWidth), (int) Math.round(scaledHeight), null);
 		}
 		
-		image = tm.getImage("hp");
+		image = tm.getImage("block-hover");
 		if(image != null && isHover()) {
 			g.drawImage(image, pos_x, pos_y, (int) Math.round(scaledWidth), (int) Math.round(scaledHeight), null);
 		}
 		
+		image = tm.getImage("block-disabled");
+		if(image != null && isDisabled()){
+			g.drawImage(image, pos_x, pos_y, (int) Math.round(scaledWidth), (int) Math.round(scaledHeight), null);
+		}
 		
 	}
 

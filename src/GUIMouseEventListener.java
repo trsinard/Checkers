@@ -42,6 +42,9 @@ public class GUIMouseEventListener implements MouseListener,
 	}
 
 	public void mousePressed(MouseEvent e) {
+		if(gui.getCurrentGame() == null){
+			return;
+		}
 		GameBlock[][] blocks = gui.getCurrentGame().getGameBoard().getBoard();
 		GameBlock block = null;
 		for (int y = 0; y < gui.getCurrentGame().getGameBoard().getSizeY(); y++) {

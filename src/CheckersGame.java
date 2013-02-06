@@ -23,10 +23,13 @@ public class CheckersGame implements AIAdapter {
 	private GameBlock activePiece;
 	// Reference to a collection of game state listeners
 	private ArrayList<GameStateListener> gameStateListeners;
-	// Type of game, two-player, ai-easy, ai-medium, ai-hard.
+	// Two-player, ai-easy, ai-medium, ai-hard opponent
+	private GameOpponent gameOpponent;
+	// Game Type to play
 	private GameType gameType;
+	
 
-	public CheckersGame(GameType gameType, CheckersSettingsManager settingsManager) {
+	public CheckersGame(GameOpponent gameOpponent, GameType gameType, CheckersSettingsManager settingsManager) {
 
 		this.settingsManager = settingsManager;
 		this.gameHistory = new ArrayList<CheckersGame>();
@@ -37,9 +40,10 @@ public class CheckersGame implements AIAdapter {
 		this.continueJumpPiece = null;
 		this.playerTurn = 1;
 		this.pieceCount_P1 = this.pieceCount_P2 = 12;
+		this.gameOpponent = gameOpponent;
 		this.gameType = gameType;
 		updateAvailableMoves();
-		if (gameType != GameType.TWO_PLAYERS) {
+		if (gameOpponent != GameOpponent.PLAYER) {
 			// Create new AI
 		}
 	}
@@ -50,10 +54,10 @@ public class CheckersGame implements AIAdapter {
 			CheckersGame prev = gameHistory.get(undoIndex);
 			this.gameBoard = prev.getGameBoard();
 			this.setActive(prev.getActivePiece());
-			this.setGameOver(prev.isGameOver());
-			this.setPlayerTurn(prev.getPlayerTurn());
 			this.setPieceCountP1(prev.getPieceCount(BlockOccupant.PLAYER));
 			this.setPieceCountP2(prev.getPieceCount(BlockOccupant.PLAYER2));
+			this.gameOver = prev.isGameOver();
+			this.playerTurn = prev.getPlayerTurn();
 			gameHistory.remove(undoIndex);
 			checkGameState(false);
 
@@ -61,25 +65,17 @@ public class CheckersGame implements AIAdapter {
 	}
 	
 	public ArrayList<CheckersGame> getGameHistory(){
-		return (ArrayList<CheckersGame>) gameHistory.clone();
+		return new ArrayList<CheckersGame>(gameHistory);
 	}
 
 	public boolean isGameOver() {
 		return gameOver;
 	}
-
-	public void setPlayerTurn(int player) {
-		this.playerTurn = player;
-	}
-
-	public void setGameOver(boolean flag) {
-		this.gameOver = flag;
+	
+	public GameOpponent getGameOpponent() {
+		return gameOpponent;
 	}
 	
-	public ArrayList<GameStateListener> getGameStateListeners() {
-		return this.gameStateListeners;
-	}
-
 	public GameType getGameType() {
 		return gameType;
 	}
@@ -242,7 +238,7 @@ public class CheckersGame implements AIAdapter {
 				GameBlock[][] grid = gameBoard.getBoard();
 				GameBlock piece = gameBoard.getBoard()[x][y];
 				if (piece.getOccupant() == BlockOccupant.EMPTY
-						|| piece.getOccupant() == BlockOccupant.NULL) {
+						|| piece.getOccupant() == BlockOccupant.NULL || piece.isDisabled()) {
 					continue;
 				}
 
@@ -404,8 +400,7 @@ public class CheckersGame implements AIAdapter {
 			}
 		}
 		if(settingsManager.isForceJumps() && jumpMoveExist){
-			ArrayList<MoveData> tempClone = new ArrayList<MoveData>();
-			tempClone = (ArrayList<MoveData>) availableMoves.clone();
+			ArrayList<MoveData> tempClone = new ArrayList<MoveData>(availableMoves);
 			for(MoveData md : tempClone){
 				if(md.getJumpedPiece() == null){
 					availableMoves.remove(md);
@@ -455,10 +450,18 @@ public class CheckersGame implements AIAdapter {
 
 		boolean kinged = checkKing();
 		if (pieceCount_P1 == 0) {
-			gameOver(BlockOccupant.PLAYER2);
+			if(gameType == GameType.REGULAR){
+				gameOver(BlockOccupant.PLAYER2);
+			} else if(gameType == GameType.REVERSE){
+				gameOver(BlockOccupant.PLAYER);
+			}
 			return;
 		} else if (pieceCount_P2 == 0) {
-			gameOver(BlockOccupant.PLAYER);
+			if(gameType == GameType.REGULAR){
+				gameOver(BlockOccupant.PLAYER);
+			} else if(gameType == GameType.REVERSE){
+				gameOver(BlockOccupant.PLAYER2);
+			}
 			return;
 		}
 		if (kinged) {
@@ -466,65 +469,82 @@ public class CheckersGame implements AIAdapter {
 		}
 		if (continueJumpPiece == null) {
 			if (rotateTurns) {
-				if (playerTurn == 1) {
-					playerTurn = 2;
+				if (playerTurn == BlockOccupant.PLAYER.getValue()) {
+					playerTurn = BlockOccupant.PLAYER2.getValue();
 
-					if (gameType != GameType.TWO_PLAYERS) {
+					if (gameOpponent != GameOpponent.PLAYER) {
 						// Perform AI move
 					}
-				} else if (playerTurn == 2) {
-					playerTurn = 1;
+				} else if (playerTurn == BlockOccupant.PLAYER2.getValue()) {
+					playerTurn = BlockOccupant.PLAYER.getValue();
 				}
 			}
 		}
 		for(GameStateListener gsl : gameStateListeners){
 			gsl.boardChange(this);
 		}
+		
+		if(gameType == GameType.REVERSE){
+			updateReverseMode();
+		}
 		updateAvailableMoves();
+		if(availableMoves.isEmpty() && gameType == GameType.REVERSE){
+			if(playerTurn == BlockOccupant.PLAYER.getValue()){
+				gameOver(BlockOccupant.PLAYER2);
+			} else if(playerTurn == BlockOccupant.PLAYER2.getValue()){
+				gameOver(BlockOccupant.PLAYER);
+			}
+		}
 	}
 
 	private boolean checkKing() {
-		for (int x = 0; x < 8; x++) {
-			if (gameBoard.getBoard()[x][0].getOccupant() == BlockOccupant.PLAYER2) {
-				if (gameBoard.getBoard()[x][0].isKing()) {
-					continue;
+		int offset = 0;
+		boolean kinged = false;
+		if(gameType == GameType.REVERSE){
+			for(int i = 0; i < gameBoard.getSizeX(); i++){
+				if(!gameBoard.getBoard()[i][i].isDisabled()){
+					offset = i;
+					break;
 				}
-				gameBoard.getBoard()[x][0].setKing(true);
-				return true;
 			}
 		}
-		for (int x = 0; x < 8; x++) {
-			if (gameBoard.getBoard()[x][7].getOccupant() == BlockOccupant.PLAYER) {
-				if (gameBoard.getBoard()[x][7].isKing()) {
+		int sizeX = gameBoard.getSizeX() - 1;
+		int sizeY = gameBoard.getSizeY() - 1;
+		for (int x = offset; x <= sizeX - offset; x++) {
+			if (gameBoard.getBoard()[x][0 + offset].getOccupant() == BlockOccupant.PLAYER2) {
+				if (gameBoard.getBoard()[x][0 + offset].isKing()) {
 					continue;
 				}
-				gameBoard.getBoard()[x][7].setKing(true);
-				return true;
+				kinged = true;
+				gameBoard.getBoard()[x][0 + offset].setKing(true);
+			}
+			if (gameBoard.getBoard()[x][sizeY - offset].getOccupant() == BlockOccupant.PLAYER) {
+				if (gameBoard.getBoard()[x][sizeY - offset].isKing()) {
+					continue;
+				}
+				kinged = true;
+				gameBoard.getBoard()[x][sizeY - offset].setKing(true);
 			}
 		}
-		return false;
+		return kinged;
 
 	}
 
 	public CheckersGame copy() {
-		CheckersGame newGame = new CheckersGame(this.getGameType(), settingsManager);
-		newGame.setPlayerTurn(this.getPlayerTurn());
-		newGame.setGameOver(this.isGameOver());
-		try {
+		CheckersGame newGame = new CheckersGame(this.getGameOpponent(), this.getGameType(), settingsManager);
+		newGame.playerTurn = this.getPlayerTurn();
+		newGame.gameOver = this.isGameOver();
+		if(this.activePiece != null){
 			newGame.setActive(this.activePiece.copy());
-		} catch (NullPointerException e) {
+		} else {
 			newGame.setActive(null);
 		}
-		try {
-			newGame.setGameBoard(this.gameBoard.copy());
-		} catch (NullPointerException e) {
-			System.exit(1);
-		}
+		newGame.gameBoard = this.gameBoard.copy();
 		newGame.setPieceCountP1(this.pieceCount_P1);
 		newGame.setPieceCountP2(this.pieceCount_P2);
-		try {
+		if(continueJumpPiece != null){
 			newGame.setJumpPiece(this.continueJumpPiece.copy());
-		} catch (NullPointerException e) {
+		} else {
 			newGame.setJumpPiece(null);
 		}
 
@@ -532,10 +552,6 @@ public class CheckersGame implements AIAdapter {
 			newGame.addStateListener(gsl);
 		}
 		return newGame;
-	}
-
-	private void setGameBoard(CheckersBoard board) {
-		this.gameBoard = board;
 	}
 
 	private void setPieceCountP1(int val) {
@@ -553,27 +569,31 @@ public class CheckersGame implements AIAdapter {
 	private void gameOver(BlockOccupant player) {
 		// Perform gameover operations
 		// ---------------------------------------------
-		setGameOver(true);
+		gameOver = true;
 		for(GameStateListener gsl : gameStateListeners){
-			gsl.gameOver(player);
+			gsl.gameOver(this, player);
 		}
 		System.out.println(player.getStringValue() + " wins.");
 	}
 
 	private boolean isValidMove(GameBlock srcPiece, GameBlock destPiece) {
+		if(srcPiece.isDisabled() || destPiece.isDisabled()){
+			return false;
+		}
 		int srcLocX = srcPiece.getGridX();
 		int srcLocY = srcPiece.getGridY();
 		int destLocX = destPiece.getGridX();
 		int destLocY = destPiece.getGridY();
-
+		int sizeX = gameBoard.getSizeX() - 1;
+		int sizeY = gameBoard.getSizeY() - 1;
 		// The destination is not empty, null block, off the board, or another
 		// piece requires a jump
 		if (destPiece.getOccupant() != BlockOccupant.EMPTY
 				|| destPiece.getOccupant() == BlockOccupant.NULL
 				|| (srcLocY > destLocY && !srcPiece.isKing() && playerTurn == 1)
 				|| (srcLocY < destLocY && !srcPiece.isKing() && playerTurn == 2)
-				|| destLocY > 7
-				|| destLocX > 7
+				|| destLocY > sizeY
+				|| destLocX > sizeX
 				|| destLocY < 0
 				|| destLocX < 0
 				|| (continueJumpPiece != null && !srcPiece.getID().equals(
@@ -587,7 +607,7 @@ public class CheckersGame implements AIAdapter {
 		ArrayList<GameBlock> jumpPieces_SW = jumpSet.get(2);
 		ArrayList<GameBlock> jumpPieces_SE = jumpSet.get(3);
 
-		if (srcLocX + 2 <= 7 && srcLocY + 2 <= 7) {
+		if (srcLocX + 2 <= sizeX && srcLocY + 2 <= sizeY) {
 			if ((jumpPieces_NE.contains(srcPiece) && playerTurn == 1 && gameBoard
 					.getBoard()[srcLocX + 2][srcLocY + 2] == destPiece)
 					|| (jumpPieces_NE.contains(srcPiece) && playerTurn == 2
@@ -595,7 +615,7 @@ public class CheckersGame implements AIAdapter {
 				return true;
 			}
 		}
-		if (srcLocX - 2 >= 0 && srcLocY + 2 <= 7) {
+		if (srcLocX - 2 >= 0 && srcLocY + 2 <= sizeY) {
 			if ((jumpPieces_NW.contains(srcPiece) && playerTurn == 1 && gameBoard
 					.getBoard()[srcLocX - 2][srcLocY + 2] == destPiece)
 					|| (jumpPieces_NW.contains(srcPiece) && playerTurn == 2
@@ -611,7 +631,7 @@ public class CheckersGame implements AIAdapter {
 				return true;
 			}
 		}
-		if (srcLocX + 2 <= 7 && srcLocY - 2 >= 0) {
+		if (srcLocX + 2 <= sizeX && srcLocY - 2 >= 0) {
 			if ((jumpPieces_SE.contains(srcPiece) && playerTurn == 1
 					&& srcPiece.isKing() && gameBoard.getBoard()[srcLocX + 2][srcLocY - 2] == destPiece)
 					|| (jumpPieces_SE.contains(srcPiece) && playerTurn == 2 && gameBoard
@@ -641,6 +661,8 @@ public class CheckersGame implements AIAdapter {
 	private ArrayList<ArrayList<GameBlock>> getJumpSet(GameBlock srcPiece) {
 		int srcLocX = srcPiece.getGridX();
 		int srcLocY = srcPiece.getGridY();
+		int sizeX = gameBoard.getSizeX() - 1;
+		int sizeY = gameBoard.getSizeY() - 1;
 		BlockOccupant opponent = null;
 		if (playerTurn == 1) {
 			opponent = BlockOccupant.PLAYER2;
@@ -654,7 +676,7 @@ public class CheckersGame implements AIAdapter {
 		ArrayList<GameBlock> jumpPieces_SE = new ArrayList<GameBlock>();
 		for (int y = 0; y < gameBoard.getSizeY(); y++) {
 			for (int x = 0; x < gameBoard.getSizeX(); x++) {
-				if (srcLocX - 2 >= 0 && srcLocY + 2 <= 7) {
+				if (srcLocX - 2 >= 0 && srcLocY + 2 <= sizeY) {
 					if (gameBoard.getBoard()[srcLocX - 1][srcLocY + 1]
 							.getOccupant() == opponent) {
 						if (gameBoard.getBoard()[srcLocX - 2][srcLocY + 2]
@@ -663,7 +685,7 @@ public class CheckersGame implements AIAdapter {
 						}
 					}
 				}
-				if (srcLocX + 2 <= 7 && srcLocY + 2 <= 7) {
+				if (srcLocX + 2 <= sizeX && srcLocY + 2 <= sizeY) {
 					if (gameBoard.getBoard()[srcLocX + 1][srcLocY + 1]
 							.getOccupant() == opponent) {
 						if (gameBoard.getBoard()[srcLocX + 2][srcLocY + 2]
@@ -673,7 +695,7 @@ public class CheckersGame implements AIAdapter {
 
 					}
 				}
-				if (srcLocX + 2 <= 7 && srcLocY - 2 >= 0) {
+				if (srcLocX + 2 <= sizeX && srcLocY - 2 >= 0) {
 					if (gameBoard.getBoard()[srcLocX + 1][srcLocY - 1]
 							.getOccupant() == opponent) {
 						if (gameBoard.getBoard()[srcLocX + 2][srcLocY - 2]
@@ -718,5 +740,57 @@ public class CheckersGame implements AIAdapter {
 			}
 		}
 		return scores;
+	}
+	
+	public void disableBoardEdge(){
+		for(int i = 0; i < gameBoard.getSizeX(); i++){
+			if(!gameBoard.getBoard()[i][i].isDisabled()){
+				for(int j=i; j<gameBoard.getSizeX()-i; j++){
+					gameBoard.getBoard()[j][gameBoard.getSizeY() - i - 1].setDisabled(true);
+					gameBoard.getBoard()[j][i].setDisabled(true);
+				}
+				for(int j=i; j<gameBoard.getSizeY()-i; j++){
+					gameBoard.getBoard()[gameBoard.getSizeX() - i - 1][j].setDisabled(true);
+					gameBoard.getBoard()[i][j].setDisabled(true);
+				}	
+				return;
+			}
+		}
+	}
+	
+	public void updateReverseMode(){
+       ArrayList<GameBlock> disabled = new ArrayList<GameBlock>();
+        
+		int x_max = 0;
+		int y_max = 0;
+		int x_min = 0;
+		int y_min = 0;
+		for(int i = 0; i < gameBoard.getSizeX(); i++){
+			if(!gameBoard.getBoard()[i][i].isDisabled()){
+				x_min = y_min = i;
+				x_max = y_max = gameBoard.getSizeX() - i - 1;
+				break;
+			}
+		}
+		if(x_max - x_min < 4){
+			return;
+		}
+		for(int i = x_min; i < x_max; i++){
+			GameBlock block1 = gameBoard.getBoard()[i][y_min];
+			GameBlock block2 = gameBoard.getBoard()[i][y_max];
+			GameBlock block3 = gameBoard.getBoard()[x_min][i];
+			GameBlock block4 = gameBoard.getBoard()[x_max][i];
+			if((block1.getOccupant() != BlockOccupant.NULL && block1.getOccupant() != BlockOccupant.EMPTY) || (block2.getOccupant() != BlockOccupant.NULL && block2.getOccupant() != BlockOccupant.EMPTY) || (block3.getOccupant() != BlockOccupant.NULL && block3.getOccupant() != BlockOccupant.EMPTY) || (block4.getOccupant() != BlockOccupant.NULL && block4.getOccupant() != BlockOccupant.EMPTY)){
+				return;
+			} 
+			disabled.add(block1);
+			disabled.add(block2);
+			disabled.add(block3);
+			disabled.add(block4);
+		}
+		
+		for(GameBlock b : disabled){
+			b.setDisabled(true);
+		}
 	}
 }

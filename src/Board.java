@@ -147,7 +147,7 @@ public class Board implements Drawable, GameStateListener {
 	}
 
 	@Override
-	public void gameOver(BlockOccupant player) {
+	public void gameOver(CheckersGame game, BlockOccupant player) {
 		// TODO Auto-generated method stub
 		
 	}

@@ -95,7 +95,8 @@ public class ScoreBoard implements Drawable, GameStateListener {
 		return newSize;
 	}
 
-	public void gameOver(BlockOccupant player) {
+	public void gameOver(CheckersGame game, BlockOccupant player) {
+		boardChange(game);
 	}
 
 	

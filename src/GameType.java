@@ -1,11 +1,13 @@
 
 public enum GameType {
-	TWO_PLAYERS(1), AI_EASY(2), AI_MEDIUM(3), AI_HARD(3);
+	REGULAR(1, "Regular"), REVERSE(2, "Reverse"), CAPTURE(3, "Capture");
 	//Store integer value associated with game-type.
 	private int value;
+	private String id;
 
-	private GameType(int v){
+	private GameType(int v, String id){
 		value = v;
+		this.id = id;
 	}
 	
 	/**
@@ -17,5 +19,9 @@ public enum GameType {
 	 */
 	public int getValue(){
 		return value;
+	}
+	
+	public String toString(){
+		return id;
 	}
 }
