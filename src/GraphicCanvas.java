@@ -48,6 +48,22 @@ public class GraphicCanvas implements Drawable {
 		this.drawItems.put(key, item);
 	}
 	
+	/**
+	 * Get and return a drawable item from collection
+	 * 
+	 * <b>Preconditions:</b> Requires String key identification
+	 * <b>Postconditions:</b> Get and return the drawable item that matches key. Returns null if not found.
+	 * <b>Throws:<b> None
+	 * @param key
+	 * @return
+	 */
+	public Drawable getDrawable(String key){
+		if(this.drawItems.containsKey(key)){
+			return this.drawItems.get(key);
+		} else{
+			return null;
+		}
+	}
 	public void removeDrawable(String key){
 		drawItems.remove(key);
 	}

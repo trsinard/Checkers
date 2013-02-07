@@ -84,6 +84,7 @@ public class CheckersGUI extends Frame implements ActionListener, ItemListener,
 		image = ThemeManager.getThemeManager().getImage("barebanner");
 		bannerCanvas.addDrawable("barebanner", new Graphic(image, 0, 0, new Dimension(image.getWidth(), image.getHeight())));
 		
+		Thread guiEffectsThread = new Thread(new EffectsRunnable(this));
 		
 		rescale(.50);
 	}
