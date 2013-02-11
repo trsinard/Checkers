@@ -16,6 +16,7 @@ public class GameBlock implements Drawable {
 	private int loc_y;
 	private int pos_x;
 	private int pos_y;
+	private int layerZ;
 	private Dimension newSize;
 	private Dimension originalSize;
 
@@ -34,6 +35,7 @@ public class GameBlock implements Drawable {
 		this.pos_y = -1;
 		this.originalSize = new Dimension(64, 64);
 		this.newSize = originalSize;
+		this.layerZ = 1;
 	}
 
 	public BlockOccupant getOccupant() {
@@ -90,6 +92,10 @@ public class GameBlock implements Drawable {
 
 	public Dimension getNewSize() {
 		return newSize;
+	}
+	
+	public int getZ(){
+		return layerZ;
 	}
 
 	public void setID(String id) {
@@ -155,6 +161,10 @@ public class GameBlock implements Drawable {
 
 	public void setNewSize(Dimension size) {
 		this.newSize = size;
+	}
+	
+	public void setZ(int z){
+		this.layerZ = z;
 	}
 
 	@Override

@@ -10,6 +10,24 @@ public interface Drawable {
 	 */
 	public void draw(Graphics2D g, ScreenData sd);
 
+	
 	public void mouseClickPosition(int x, int y);
+	
+	/**
+	 * Method to get the layer priority
+	 * <b>Preconditions:</b> None
+	 * <b>Postconditions:</b> Returns layer priority
+	 * <b>Throws:</b> None
+	 */
+	public int getZ();
+	
+	/**
+	 * Method to get the drawable ID
+	 * <b>Preconditions:</b> None
+	 * <b>Postconditions:</b> Returns String value identification
+	 * <b>Throws:</b> None
+	 */
+	
+	public String getID();
 	
 }

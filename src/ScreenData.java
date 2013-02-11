@@ -4,7 +4,7 @@
  */
 public class ScreenData {
 
-	public static final String BUILD_MODEL = "1.0.2B";
+	public static final String BUILD_MODEL = "1.0.3B";
 	//Original height and width of the screen
 	private int originalWidth;
 	private int originalHeight;

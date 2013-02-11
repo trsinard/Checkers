@@ -57,12 +57,12 @@ public class CheckersGUI extends Frame implements ActionListener, ItemListener,
 		this.settingsManager = new CheckersSettingsManager();
 		
 		this.boardPanel = new DrawPanel();
-		this.boardCanvas = new GraphicCanvas();
+		this.boardCanvas = new GraphicCanvas("boardCanvas");
 		this.boardPanel.setDrawable(boardCanvas);
 
 		this.scoreBoardPanel = new DrawPanel();
-		this.scoreBoard = new ScoreBoard();
-		GraphicCanvas bannerCanvas = new GraphicCanvas();
+		this.scoreBoard = new ScoreBoard("mainScoreBoard");
+		GraphicCanvas bannerCanvas = new GraphicCanvas("bannerCanvas");
 		this.scoreBoardPanel.setDrawable(bannerCanvas);
 
 		this.addComponentListener(this);
@@ -80,11 +80,14 @@ public class CheckersGUI extends Frame implements ActionListener, ItemListener,
 
 		showStartPanel = true;
 		BufferedImage image = ThemeManager.getThemeManager().getImage("title");
-		boardCanvas.addDrawable("title", new Graphic(image, 0, 0, new Dimension(image.getWidth(), image.getHeight())));
+		boardCanvas.addDrawable("title", new Graphic("title", image, 0, 0, new Dimension(image.getWidth(), image.getHeight()), 1));
+		image = ThemeManager.getThemeManager().getImage("gloss-board");
+		boardCanvas.addDrawable("gloss-board", new Graphic("gloss-board",image, 0,0, new Dimension(image.getWidth(), image.getHeight()), 2));
 		image = ThemeManager.getThemeManager().getImage("barebanner");
-		bannerCanvas.addDrawable("barebanner", new Graphic(image, 0, 0, new Dimension(image.getWidth(), image.getHeight())));
+		bannerCanvas.addDrawable("barebanner", new Graphic("barebanner",image, 0, 0, new Dimension(image.getWidth(), image.getHeight()), 1));
 		
 		Thread guiEffectsThread = new Thread(new EffectsRunnable(this));
+		guiEffectsThread.start();
 		
 		rescale(.50);
 	}
@@ -381,10 +384,10 @@ public class CheckersGUI extends Frame implements ActionListener, ItemListener,
 
 		if(showStartPanel){
 			this.scoreBoardPanel.setDrawable(scoreBoard);
-			rescale(guiRatio);
 			boardCanvas.removeDrawable("title");
+			boardCanvas.removeDrawable("gloss-board");
 			showStartPanel = false;
-			
+			rescale(guiRatio);
 		}
 		currentGame = new CheckersGame(opponent, type, settingsManager);
 		boardCanvas.addDrawable("board", getCurrentGame().getGameBoard());

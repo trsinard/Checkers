@@ -17,8 +17,14 @@ public class ScoreBoard implements Drawable, GameStateListener {
 	private Dimension newSize;
 	//The original image size.
 	private Dimension originalSize;
+	//Z-layer
+	private int layerZ;
+	//ID
+	private String id;
 
-	public ScoreBoard() {
+	public ScoreBoard(String id) {
+		this.id = id;
+		this.layerZ = 0;
 		this.originalSize = new Dimension(1024, 64);
 		this.newSize = originalSize;
 	}
@@ -99,7 +105,15 @@ public class ScoreBoard implements Drawable, GameStateListener {
 		boardChange(game);
 	}
 
-	
+	/**
+	 * Method to get the layer priority
+	 * <b>Preconditions:</b> None
+	 * <b>Postconditions:</b> Returns layer priority
+	 * <b>Throws:</b> None
+	 */
+	public int getZ(){
+		return layerZ;
+	}
 	/**
 	 * Method to apply the images and draw the graphics.
 	 *<b>Preconditions:</b> None
@@ -200,6 +214,11 @@ public class ScoreBoard implements Drawable, GameStateListener {
 			split[0] = split[1] = 9;
 		}
 		return split;
+	}
+
+	@Override
+	public String getID() {
+		return id;
 	}
 
 }

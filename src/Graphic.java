@@ -3,22 +3,26 @@ import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
-public class Graphic implements Drawable {
+public class Graphic implements Drawable{
 
 	private BufferedImage image;
+	public String id;
 	private int x_pos;
 	private int y_pos;
 	private int x_grid;
 	private int y_grid;
 	private int rotation;
+	private int layerZ;
 	private Dimension originalSize;
 	private Dimension size;
 
-	public Graphic(BufferedImage image, int x_pos, int y_pos, Dimension size) {
+	public Graphic(String id, BufferedImage image, int x_pos, int y_pos, Dimension size, int layerZ) {
 		this.image = image;
+		this.id = id;
 		this.x_pos = x_pos;
 		this.y_pos = y_pos;
 		this.size = this.originalSize = size;
+		this.layerZ = layerZ;
 		this.x_grid = 1;
 		this.y_grid = 1;
 		this.rotation = 0;
@@ -49,6 +53,14 @@ public class Graphic implements Drawable {
 		this.y_grid = gy;
 	}
 
+	public void setZ(int z){
+		this.layerZ = z;
+	}
+	
+	public String getID(){
+		return id;
+	}
+	
 	public int getGridPosX() {
 		return x_grid;
 	}
@@ -79,6 +91,10 @@ public class Graphic implements Drawable {
 
 	public Dimension getSize() {
 		return size;
+	}
+	
+	public int getZ(){
+		return this.layerZ;
 	}
 
 	public void draw(Graphics2D g, ScreenData sd) {

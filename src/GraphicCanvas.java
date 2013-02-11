@@ -1,9 +1,8 @@
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.Map.Entry;
+import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * A drawable class that works as a canvas for a collection of images. 
@@ -13,14 +12,20 @@ import java.util.Map.Entry;
  */
 public class GraphicCanvas implements Drawable {
 	private final ImageLoader il = ImageLoader.getImageLoader();
-	//Collection storing the drawable items, by key
-	private Map<String, Drawable> drawItems;
+	//Collection storing the drawable items
+	private ArrayList<Drawable> drawItems;
 	//Stores the most recent screen data/properties.
 	private ScreenData recentScreenData;
+	//Z-layer
+	private int layerZ;
+	//Drawable ID
+	private String id;
 	
-	public GraphicCanvas() {
-			this.drawItems = new TreeMap<String, Drawable>();
-			this.recentScreenData = null;
+	public GraphicCanvas(String id) {
+		this.id = id;
+		this.drawItems = new ArrayList<Drawable>();
+		this.recentScreenData = null;
+		this.layerZ = 0;
 	}
 	
 	/**
@@ -42,10 +47,15 @@ public class GraphicCanvas implements Drawable {
 	 *<b>Throws:</b> None
 	 */
 	public void addDrawable(String key, Drawable item){
-		if(this.drawItems.containsKey(key)){
-			this.drawItems.remove(key);
+		for(Drawable d : drawItems){
+			if(d.getID().equals(item.getID())){
+				drawItems.remove(d);
+				drawItems.add(item);
+				return;
+			}
 		}
-		this.drawItems.put(key, item);
+		drawItems.add(item);
+		Collections.sort(drawItems, new GraphicsLayerComparator<Drawable>());
 	}
 	
 	/**
@@ -58,14 +68,33 @@ public class GraphicCanvas implements Drawable {
 	 * @return
 	 */
 	public Drawable getDrawable(String key){
-		if(this.drawItems.containsKey(key)){
-			return this.drawItems.get(key);
-		} else{
-			return null;
+		for(Drawable d : drawItems){
+			if(d.getID().equals(key)){
+				return d;
+			}
 		}
+		return null;
 	}
-	public void removeDrawable(String key){
-		drawItems.remove(key);
+	
+	public String getID(){
+		return id;
+	}
+	
+	public int getZ(){
+		return layerZ;
+	}
+	public boolean removeDrawable(String id){
+		for(Drawable d : drawItems){
+			if(d.getID().equals(id)){
+				drawItems.remove(d);
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean removeDrawable(Drawable d){
+		return drawItems.remove(d);
 	}
 	
 	public void draw(Graphics2D g, ScreenData sd) {
@@ -74,8 +103,8 @@ public class GraphicCanvas implements Drawable {
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 				RenderingHints.VALUE_ANTIALIAS_ON);
 		g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-		for(Entry<String, Drawable> entry : this.drawItems.entrySet()) {
-			entry.getValue().draw(g, sd);
+		for(Drawable d : drawItems){
+			d.draw(g, sd);
 		}
 	}
 

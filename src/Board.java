@@ -5,13 +5,17 @@ import java.util.ArrayList;
 
 public class Board implements Drawable, GameStateListener {
 
+	private String id;
 	private int boardSizeX;
 	private int boardSizeY;
 	private int moveCount;
+	private int layerZ;
 	private ArrayList<Drawable> graphics;
 	private GameBlock[][] board;
 
 	public Board(int size_x, int size_y) {
+		this.id = "drawable-board";
+		this.layerZ = 0;
 		this.boardSizeX = size_x;
 		this.boardSizeY = size_y;
 		this.graphics = new ArrayList<Drawable>();
@@ -55,6 +59,10 @@ public class Board implements Drawable, GameStateListener {
 		return board[pos_x][pos_y];
 	}
 	
+	public String getID(){
+		return id;
+	}
+	
 	public void addGraphic(Drawable graphic){
 		graphics.add(graphic);
 	}
@@ -73,6 +81,9 @@ public class Board implements Drawable, GameStateListener {
 		board[srcLocX][srcLocY] = destPiece;
 	}
 
+	public int getZ(){
+		return layerZ;
+	}
 	@Override
 	public void draw(Graphics2D g, ScreenData sd) {
 
