@@ -1,6 +1,6 @@
 package com.timothysinard.Checkers.utils;
 
-public class Timer {
+public class Timer { 
 
 	// Stores the start time of the timer.
 	private long startTime;
@@ -8,7 +8,7 @@ public class Timer {
 	private long stopTime;
 	// Stores if the timer is currently active.
 	private boolean active;
-
+ 
 	public Timer() {
 		startTime = 0;
 		stopTime = 0;

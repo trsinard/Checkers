@@ -6,9 +6,10 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 
+import com.timothysinard.Checkers.utils.Timer;
+
 import com.timothysinard.Checkers.core.BlockOccupant;
 import com.timothysinard.Checkers.core.GameBlock;
-import com.timothysinard.Checkers.utils.Timer;
 
 public class GUIMouseEventListener implements MouseListener,
 		MouseMotionListener, MouseWheelListener {

@@ -1,10 +1,6 @@
 package com.timothysinard.Checkers.gui;
 import com.timothysinard.Checkers.utils.Timer;
 
-
-
-
-
 public class EffectsRunnable implements Runnable {
 
 	private CheckersGUI gui;
