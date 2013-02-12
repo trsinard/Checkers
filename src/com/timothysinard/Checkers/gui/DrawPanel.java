@@ -9,12 +9,32 @@ public class DrawPanel extends JPanel implements MouseMotionListener {
 	private static final long serialVersionUID = 1L;
 	private Drawable pict;
 	private double ratio;
+	private GUIMouseEventListener meListener;
 
 	public DrawPanel() {
 		pict = null;
 		ratio = 1.0;
 		addMouseMotionListener(this);
 	}
+	
+	public void setMouseListener(GUIMouseEventListener meListener){
+		this.meListener = meListener;
+		this.addMouseListener(meListener);
+		this.addMouseMotionListener(meListener);
+		this.addMouseWheelListener(meListener);
+	}
+	
+	public void removeMouseListener(){
+		this.removeMouseListener(meListener);
+		this.removeMouseMotionListener(meListener);
+		this.removeMouseWheelListener(meListener);
+		this.meListener = null;
+	}
+	
+	public GUIMouseEventListener getMouseListener(){
+		return this.meListener;
+	}
+	
 
 	public void setDrawable(Drawable drawable) {
 		if (drawable != null) {

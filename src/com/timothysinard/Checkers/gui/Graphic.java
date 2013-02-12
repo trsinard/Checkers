@@ -103,7 +103,7 @@ public class Graphic implements Drawable{
 		int w = (int) Math.round(image.getWidth() * sd.getScaleRatio());
 		int h = (int) Math.round(image.getHeight() * sd.getScaleRatio());
 		AffineTransform at = new AffineTransform();
-		at.translate(x_pos, y_pos);
+		at.translate(x_pos * sd.getScaleRatio() , y_pos * sd.getScaleRatio());
 		
 		at.rotate(Math.toRadians(rotation), w/2, h/2);
 		at.scale(sd.getScaleRatio(), sd.getScaleRatio());

@@ -417,6 +417,9 @@ public class CheckersGame {
 	}
 
 	public boolean move(GameBlock srcPiece, GameBlock destPiece) {
+		if(gameOver){
+			return false;
+		}
 		gameHistory.add(this.copy());
 		for (MoveData md : availableMoves) {
 			if (md.getSrcPiece().equals(srcPiece)
@@ -449,7 +452,9 @@ public class CheckersGame {
 	}
 
 	private void checkGameState(boolean rotateTurns) {
-
+		if(gameOver){
+			return;
+		}
 		boolean kinged = checkKing();
 		if (pieceCount_P1 == 0) {
 			if (gameType == GameType.REGULAR) {
@@ -490,7 +495,7 @@ public class CheckersGame {
 			updateReverseMode();
 		}
 		updateAvailableMoves();
-		if (availableMoves.isEmpty() && gameType == GameType.REVERSE) {
+		if (availableMoves.isEmpty()) {
 			if (playerTurn == BlockOccupant.PLAYER.getValue()) {
 				gameOver(BlockOccupant.PLAYER2);
 			} else if (playerTurn == BlockOccupant.PLAYER2.getValue()) {
@@ -742,24 +747,6 @@ public class CheckersGame {
 			}
 		}
 		return scores;
-	}
-
-	public void disableBoardEdge() {
-		for (int i = 0; i < gameBoard.getSizeX(); i++) {
-			if (!gameBoard.getBoard()[i][i].isDisabled()) {
-				for (int j = i; j < gameBoard.getSizeX() - i; j++) {
-					gameBoard.getBoard()[j][gameBoard.getSizeY() - i - 1]
-							.setDisabled(true);
-					gameBoard.getBoard()[j][i].setDisabled(true);
-				}
-				for (int j = i; j < gameBoard.getSizeY() - i; j++) {
-					gameBoard.getBoard()[gameBoard.getSizeX() - i - 1][j]
-							.setDisabled(true);
-					gameBoard.getBoard()[i][j].setDisabled(true);
-				}
-				return;
-			}
-		}
 	}
 
 	public void updateReverseMode() {

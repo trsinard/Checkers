@@ -33,6 +33,7 @@ import com.timothysinard.Checkers.core.GameStateListener;
 import com.timothysinard.Checkers.core.GameType;
 import com.timothysinard.Checkers.utils.FileIOException;
 import com.timothysinard.Checkers.utils.InvalidThemeException;
+import com.timothysinard.Checkers.utils.Sound;
 import com.timothysinard.Checkers.utils.ThemeManager;
 
 public class CheckersGUI extends Frame implements ActionListener, ItemListener,
@@ -56,38 +57,44 @@ public class CheckersGUI extends Frame implements ActionListener, ItemListener,
 	private JCheckBox guideButton;
 	private JCheckBox forceJumpButton;
 	private ButtonGroup gTypeGroup;
+	
+	private Sound backgroundSound;
 
 	private double guiRatio;
 
 	private CheckersGame currentGame;
 
 	public CheckersGUI() throws FileIOException {
+		//Build basic frame
 		super(DEFAULT_DIMENSION, "Checkers");
 		this.setResizable(false);
-
+		//Create settings manager
 		this.settingsManager = new CheckersSettingsManager();
 
+		//Create main panel to be drawn on
 		this.boardPanel = new DrawPanel();
 		this.boardCanvas = new GraphicCanvas("boardCanvas");
 		this.boardPanel.setDrawable(boardCanvas);
-
+		//Create scoreboard/banner to be drawn on
 		this.scoreBoardPanel = new DrawPanel();
 		this.scoreBoard = new ScoreBoard("mainScoreBoard");
 		GraphicCanvas bannerCanvas = new GraphicCanvas("bannerCanvas");
 		this.scoreBoardPanel.setDrawable(bannerCanvas);
-
+		//Prepare listener
 		this.addComponentListener(this);
-
+		//Fill the container
 		GUIContainer = this.getContentPane();
 		GUIContainer.add(boardPanel, BorderLayout.CENTER);
 		GUIContainer.add(scoreBoardPanel, BorderLayout.NORTH);
-
+		//Build control menu bar
 		buildMenuBar();
-
+		//Start display - set to visible location on screen
 		setVisible(true);
 		this.setLocation(50, 50);
+		//Prepare mouse listener
 		new GUIMouseEventListener(this, boardPanel);
 
+		//Introduction screen
 		showStartPanel = true;
 		BufferedImage image = ThemeManager.getThemeManager().getImage("title");
 		boardCanvas.addDrawable("title", new Graphic("title", image, 0, 0,
@@ -99,11 +106,17 @@ public class CheckersGUI extends Frame implements ActionListener, ItemListener,
 		image = ThemeManager.getThemeManager().getImage("barebanner");
 		bannerCanvas.addDrawable("barebanner", new Graphic("barebanner", image,
 				0, 0, new Dimension(image.getWidth(), image.getHeight()), 1));
-
 		Thread guiEffectsThread = new Thread(new EffectsRunnable(this));
 		guiEffectsThread.start();
-
+		
+		//Scale to half size
 		rescale(.50);
+		
+		//Start background sound
+		backgroundSound = new Sound("/background.wav");
+		backgroundSound.loopSound();
+		System.out.println(backgroundSound.getClip() == null);
+		
 	}
 
 	public boolean isShowingStart() {
@@ -284,12 +297,20 @@ public class CheckersGUI extends Frame implements ActionListener, ItemListener,
 	}
 
 	private JMenu buildGameMenu() {
-		JMenu fileMenu = new JMenu("Game");
-		fileMenu.setMnemonic(KeyEvent.VK_G);
-		fileMenu.add(buildGameTypeSubMenu());
+		JMenu gameMenu = new JMenu("Game");
+		gameMenu.setMnemonic(KeyEvent.VK_G);
+		//gameMenu.add(buildGameTypeSubMenu());
+		// Start: Temporary code for menu construction until AI implementation
+		
+		JMenuItem newGameAction = new JMenuItem("New Game");
+		newGameAction.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK));
+		newGameAction.addActionListener(this);
+		newGameAction.setActionCommand("TwoPlayers");
+		newGameAction.setEnabled(true);
+		gameMenu.add(newGameAction);
 
-		fileMenu.add(buildModeMenu());
-		fileMenu.addSeparator();
+		gameMenu.add(buildModeMenu());
+		gameMenu.addSeparator();
 		undoAction = new JMenuItem("Undo");
 		undoAction.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z,
 				ActionEvent.CTRL_MASK));
@@ -297,19 +318,23 @@ public class CheckersGUI extends Frame implements ActionListener, ItemListener,
 		undoAction.setActionCommand("Undo");
 		undoAction.setEnabled(false);
 		undoAction.setForeground(Color.GRAY);
-		fileMenu.add(undoAction);
+		gameMenu.add(undoAction);
 
 		JMenuItem exitAction = new JMenuItem("Exit");
 		exitAction.addActionListener(this);
 		exitAction.setActionCommand("Exit");
 		exitAction.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q,
 				ActionEvent.CTRL_MASK));
-		fileMenu.addSeparator();
-		fileMenu.add(exitAction);
+		gameMenu.addSeparator();
+		gameMenu.add(exitAction);
 
-		return fileMenu;
+		return gameMenu;
 	}
 
+	/* Dead Code 
+	 * Future AI implementation
+	 * 
+	 * 
 	private JMenu buildGameTypeSubMenu() {
 		JMenu newAction = new JMenu("New");
 		newAction.setMnemonic(KeyEvent.VK_N);
@@ -336,9 +361,10 @@ public class CheckersGUI extends Frame implements ActionListener, ItemListener,
 		newAction.add(onePlayer);
 		newAction.add(twoPlayer);
 		return newAction;
+	
 
 	}
-
+	*/
 	private JMenu buildOptionMenu() {
 		JMenu optionMenu = new JMenu("Options");
 		optionMenu.setMnemonic(KeyEvent.VK_O);
@@ -410,10 +436,10 @@ public class CheckersGUI extends Frame implements ActionListener, ItemListener,
 		if (showStartPanel) {
 			this.scoreBoardPanel.setDrawable(scoreBoard);
 			boardCanvas.removeDrawable("title");
-			boardCanvas.removeDrawable("gloss-board");
 			showStartPanel = false;
 			rescale(guiRatio);
 		}
+		boardCanvas.removeDrawable("gameover");
 		currentGame = new CheckersGame(opponent, type, settingsManager);
 		boardCanvas.addDrawable("board", getCurrentGame().getGameBoard());
 		currentGame.addStateListener(this.scoreBoard);
@@ -449,7 +475,16 @@ public class CheckersGUI extends Frame implements ActionListener, ItemListener,
 
 	@Override
 	public void gameOver(CheckersGame game, BlockOccupant player) {
-		// TODO Auto-generated method stub
-
+		
+		BufferedImage image = null;
+		if(player == BlockOccupant.PLAYER){
+			image = ThemeManager.getThemeManager().getImage("gameover-p1");
+		} else if(player == BlockOccupant.PLAYER2){
+			image = ThemeManager.getThemeManager().getImage("gameover-p2");
+		} else {
+			return;
+		}
+		boardCanvas.addDrawable("gameover", new Graphic("gameover", image, 0, 0,
+				new Dimension(image.getWidth(), image.getHeight()), 4));
 	}
 }

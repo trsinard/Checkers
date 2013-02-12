@@ -1,15 +1,18 @@
 package com.timothysinard.Checkers.gui;
+import com.timothysinard.Checkers.utils.Random;
 import com.timothysinard.Checkers.utils.Timer;
 
 public class EffectsRunnable implements Runnable {
 
 	private CheckersGUI gui;
 	private Timer timer;
-	private final double REFRESH_RATE = 0.0115;
+	private boolean showGloss;
+	private final double REFRESH_RATE = 0.0015;
 	
 	public EffectsRunnable(CheckersGUI gui){
 		this.gui = gui;
 		this.timer = new Timer();
+		this.showGloss = true;
 		
 	}
 	public void run() {
@@ -17,9 +20,14 @@ public class EffectsRunnable implements Runnable {
 		adjustStartEffects(true);
 		while(true){
 			if(timer.getElapsedTime() * 1.0e-9 > REFRESH_RATE){
-				if(gui.isShowingStart()){
-					adjustStartEffects(false);
-				}	
+				//if(gui.isShowingStart()){
+					if(Random.getRandomNumberGenerator().randomInt(1, 10000) == 50){
+						showGloss = true;
+					}
+					if(showGloss == true){
+						adjustStartEffects(false);
+					}
+				//}	
 				timer.resetTimer();
 				gui.repaint();
 				
@@ -37,6 +45,10 @@ public class EffectsRunnable implements Runnable {
 	}
 	
 	public void adjustStartEffects(boolean first){
+		adjustTitleGloss(first);
+	}
+	
+	public void adjustTitleGloss(boolean first){
 		Drawable img = gui.getBoardCanvas().getDrawable("gloss-board");
 		if(img instanceof Graphic && img != null){
 			int maxX = (int) Math.round(((Graphic) img).getImage().getWidth() * gui.getRatio());
@@ -59,6 +71,7 @@ public class EffectsRunnable implements Runnable {
 			} else if(currPosX >= maxX && currPosY >= maxY){
 				//Max height, far right
 				xOffset = yOffset = minX * 2;
+				showGloss = false;
 			} else if(currPosX < maxX && currPosY < maxY){
 				//Neither edge hit
 				xOffset++;
@@ -69,5 +82,4 @@ public class EffectsRunnable implements Runnable {
 			((Graphic) img).setPosY(((Graphic) img).getPosY() + yOffset);
 		}
 	}
-
 }
