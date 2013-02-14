@@ -1,4 +1,5 @@
 package com.timothysinard.Checkers.core;
+
 import java.util.ArrayList;
 
 public class CheckersGame {
@@ -23,7 +24,7 @@ public class CheckersGame {
 	// Current active, selected, piece.
 	private GameBlock activePiece;
 	// Reference to a collection of game state listeners
-	private final ArrayList<GameStateListener> gameStateListeners;
+	private final ArrayList<GameStateListener<CheckersGame>> gameStateListeners;
 	// Two-player, ai-easy, ai-medium, ai-hard opponent
 	private final GameOpponent gameOpponent;
 	// Game Type to play
@@ -35,7 +36,7 @@ public class CheckersGame {
 		this.settingsManager = settingsManager;
 		this.gameHistory = new ArrayList<CheckersGame>();
 		this.availableMoves = new ArrayList<MoveData>();
-		this.gameStateListeners = new ArrayList<GameStateListener>();
+		this.gameStateListeners = new ArrayList<GameStateListener<CheckersGame>>();
 		this.gameBoard = new CheckersBoard();
 		this.gameOver = false;
 		this.continueJumpPiece = null;
@@ -143,9 +144,9 @@ public class CheckersGame {
 		}
 	}
 
-	public void addStateListener(GameStateListener listener) {
+	public void addStateListener(GameStateListener<CheckersGame> listener) {
 		gameStateListeners.add(listener);
-		for (GameStateListener gsl : gameStateListeners) {
+		for (GameStateListener<CheckersGame> gsl : gameStateListeners) {
 			gsl.boardChange(this);
 		}
 	}
@@ -417,7 +418,7 @@ public class CheckersGame {
 	}
 
 	public boolean move(GameBlock srcPiece, GameBlock destPiece) {
-		if(gameOver){
+		if (gameOver) {
 			return false;
 		}
 		gameHistory.add(this.copy());
@@ -452,7 +453,7 @@ public class CheckersGame {
 	}
 
 	private void checkGameState(boolean rotateTurns) {
-		if(gameOver){
+		if (gameOver) {
 			return;
 		}
 		boolean kinged = checkKing();
@@ -487,7 +488,7 @@ public class CheckersGame {
 				}
 			}
 		}
-		for (GameStateListener gsl : gameStateListeners) {
+		for (GameStateListener<CheckersGame> gsl : gameStateListeners) {
 			gsl.boardChange(this);
 		}
 
@@ -556,7 +557,7 @@ public class CheckersGame {
 			newGame.setJumpPiece(null);
 		}
 
-		for (GameStateListener gsl : this.gameStateListeners) {
+		for (GameStateListener<CheckersGame> gsl : this.gameStateListeners) {
 			newGame.addStateListener(gsl);
 		}
 		return newGame;
@@ -578,10 +579,9 @@ public class CheckersGame {
 		// Perform gameover operations
 		// ---------------------------------------------
 		gameOver = true;
-		for (GameStateListener gsl : gameStateListeners) {
+		for (GameStateListener<CheckersGame> gsl : gameStateListeners) {
 			gsl.gameOver(this, player);
 		}
-		System.out.println(player.getStringValue() + " wins.");
 	}
 
 	private boolean isValidMove(GameBlock srcPiece, GameBlock destPiece) {
@@ -766,7 +766,7 @@ public class CheckersGame {
 		if (x_max - x_min < 4) {
 			return;
 		}
-		for (int i = x_min; i < x_max; i++) {
+		for (int i = x_min; i <= x_max; i++) {
 			GameBlock block1 = gameBoard.getBoard()[i][y_min];
 			GameBlock block2 = gameBoard.getBoard()[i][y_max];
 			GameBlock block3 = gameBoard.getBoard()[x_min][i];

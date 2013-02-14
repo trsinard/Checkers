@@ -6,10 +6,9 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 
-import com.timothysinard.Checkers.utils.Timer;
-
 import com.timothysinard.Checkers.core.BlockOccupant;
 import com.timothysinard.Checkers.core.GameBlock;
+import com.timothysinard.Checkers.utils.Timer;
 
 public class GUIMouseEventListener implements MouseListener,
 		MouseMotionListener, MouseWheelListener {
@@ -54,6 +53,9 @@ public class GUIMouseEventListener implements MouseListener,
 	}
 
 	@Override
+	/**
+	 * Detects location of click, activates selected piece.
+	 */
 	public void mousePressed(MouseEvent e) {
 		if (gui.getCurrentGame() == null) {
 			return;
@@ -87,6 +89,10 @@ public class GUIMouseEventListener implements MouseListener,
 	}
 
 	@Override
+	/**
+	 * Scroll detection resizes window. Timer delay set to resize faster
+	 * with faster scroll, more precise resize with slower scroll.
+	 */
 	public void mouseWheelMoved(MouseWheelEvent e) {
 		if (timer.getElapsedTime() * 1e-9 > SCROLL_DELAY_SECS) {
 			int rots = (int) e.getPreciseWheelRotation();
@@ -98,6 +104,12 @@ public class GUIMouseEventListener implements MouseListener,
 		}
 	}
 
+	/**
+	 * Detects location of mouse cursor, sets block as active-hover if position
+	 * matches.
+	 * 
+	 * @param e
+	 */
 	private void updateMousePosition(MouseEvent e) {
 		if (gui.getCurrentGame() != null) {
 

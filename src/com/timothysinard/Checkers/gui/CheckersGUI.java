@@ -37,7 +37,7 @@ import com.timothysinard.Checkers.utils.Sound;
 import com.timothysinard.Checkers.utils.ThemeManager;
 
 public class CheckersGUI extends Frame implements ActionListener, ItemListener,
-		ComponentListener, GameStateListener {
+		ComponentListener, GameStateListener<CheckersGame> {
 
 	private static Dimension DEFAULT_DIMENSION = new Dimension(1024, 1024);
 	private static final long serialVersionUID = 1L;
@@ -57,44 +57,44 @@ public class CheckersGUI extends Frame implements ActionListener, ItemListener,
 	private JCheckBox guideButton;
 	private JCheckBox forceJumpButton;
 	private ButtonGroup gTypeGroup;
-	
-	private Sound backgroundSound;
+
+	private final Sound backgroundSound;
 
 	private double guiRatio;
 
 	private CheckersGame currentGame;
 
 	public CheckersGUI() throws FileIOException {
-		//Build basic frame
+		// Build basic frame
 		super(DEFAULT_DIMENSION, "Checkers");
 		this.setResizable(false);
-		//Create settings manager
+		// Create settings manager
 		this.settingsManager = new CheckersSettingsManager();
 
-		//Create main panel to be drawn on
+		// Create main panel to be drawn on
 		this.boardPanel = new DrawPanel();
 		this.boardCanvas = new GraphicCanvas("boardCanvas");
 		this.boardPanel.setDrawable(boardCanvas);
-		//Create scoreboard/banner to be drawn on
+		// Create scoreboard/banner to be drawn on
 		this.scoreBoardPanel = new DrawPanel();
 		this.scoreBoard = new ScoreBoard("mainScoreBoard");
 		GraphicCanvas bannerCanvas = new GraphicCanvas("bannerCanvas");
 		this.scoreBoardPanel.setDrawable(bannerCanvas);
-		//Prepare listener
+		// Prepare listener
 		this.addComponentListener(this);
-		//Fill the container
+		// Fill the container
 		GUIContainer = this.getContentPane();
 		GUIContainer.add(boardPanel, BorderLayout.CENTER);
 		GUIContainer.add(scoreBoardPanel, BorderLayout.NORTH);
-		//Build control menu bar
+		// Build control menu bar
 		buildMenuBar();
-		//Start display - set to visible location on screen
+		// Start display - set to visible location on screen
 		setVisible(true);
 		this.setLocation(50, 50);
-		//Prepare mouse listener
+		// Prepare mouse listener
 		new GUIMouseEventListener(this, boardPanel);
 
-		//Introduction screen
+		// Introduction screen
 		showStartPanel = true;
 		BufferedImage image = ThemeManager.getThemeManager().getImage("title");
 		boardCanvas.addDrawable("title", new Graphic("title", image, 0, 0,
@@ -108,15 +108,14 @@ public class CheckersGUI extends Frame implements ActionListener, ItemListener,
 				0, 0, new Dimension(image.getWidth(), image.getHeight()), 1));
 		Thread guiEffectsThread = new Thread(new EffectsRunnable(this));
 		guiEffectsThread.start();
-		
-		//Scale to half size
+
+		// Scale to half size
 		rescale(.50);
-		
-		//Start background sound
+
+		// Start background sound
 		backgroundSound = new Sound("/background.wav");
 		backgroundSound.loopSound();
-		System.out.println(backgroundSound.getClip() == null);
-		
+
 	}
 
 	public boolean isShowingStart() {
@@ -299,11 +298,12 @@ public class CheckersGUI extends Frame implements ActionListener, ItemListener,
 	private JMenu buildGameMenu() {
 		JMenu gameMenu = new JMenu("Game");
 		gameMenu.setMnemonic(KeyEvent.VK_G);
-		//gameMenu.add(buildGameTypeSubMenu());
+		// gameMenu.add(buildGameTypeSubMenu());
 		// Start: Temporary code for menu construction until AI implementation
-		
+
 		JMenuItem newGameAction = new JMenuItem("New Game");
-		newGameAction.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK));
+		newGameAction.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N,
+				ActionEvent.CTRL_MASK));
 		newGameAction.addActionListener(this);
 		newGameAction.setActionCommand("TwoPlayers");
 		newGameAction.setEnabled(true);
@@ -331,40 +331,31 @@ public class CheckersGUI extends Frame implements ActionListener, ItemListener,
 		return gameMenu;
 	}
 
-	/* Dead Code 
-	 * Future AI implementation
+	/*
+	 * Dead Code Future AI implementation
 	 * 
 	 * 
-	private JMenu buildGameTypeSubMenu() {
-		JMenu newAction = new JMenu("New");
-		newAction.setMnemonic(KeyEvent.VK_N);
-		JMenu onePlayer = new JMenu("One Player");
-		JMenuItem twoPlayer = new JMenuItem("Two Players");
-		twoPlayer.addActionListener(this);
-		twoPlayer.setActionCommand("TwoPlayers");
-
-		JMenuItem aiEasy = new JMenuItem("Easy");
-		aiEasy.addActionListener(this);
-		aiEasy.setActionCommand("aiEasy");
-		onePlayer.add(aiEasy);
-
-		JMenuItem aiMedium = new JMenuItem("Moderate");
-		aiMedium.addActionListener(this);
-		aiMedium.setActionCommand("aiMedium");
-		onePlayer.add(aiMedium);
-
-		JMenuItem aiHard = new JMenuItem("Hard");
-		aiHard.addActionListener(this);
-		aiHard.setActionCommand("aiHard");
-		onePlayer.add(aiHard);
-
-		newAction.add(onePlayer);
-		newAction.add(twoPlayer);
-		return newAction;
-	
-
-	}
-	*/
+	 * private JMenu buildGameTypeSubMenu() { JMenu newAction = new
+	 * JMenu("New"); newAction.setMnemonic(KeyEvent.VK_N); JMenu onePlayer = new
+	 * JMenu("One Player"); JMenuItem twoPlayer = new JMenuItem("Two Players");
+	 * twoPlayer.addActionListener(this);
+	 * twoPlayer.setActionCommand("TwoPlayers");
+	 * 
+	 * JMenuItem aiEasy = new JMenuItem("Easy"); aiEasy.addActionListener(this);
+	 * aiEasy.setActionCommand("aiEasy"); onePlayer.add(aiEasy);
+	 * 
+	 * JMenuItem aiMedium = new JMenuItem("Moderate");
+	 * aiMedium.addActionListener(this); aiMedium.setActionCommand("aiMedium");
+	 * onePlayer.add(aiMedium);
+	 * 
+	 * JMenuItem aiHard = new JMenuItem("Hard"); aiHard.addActionListener(this);
+	 * aiHard.setActionCommand("aiHard"); onePlayer.add(aiHard);
+	 * 
+	 * newAction.add(onePlayer); newAction.add(twoPlayer); return newAction;
+	 * 
+	 * 
+	 * }
+	 */
 	private JMenu buildOptionMenu() {
 		JMenu optionMenu = new JMenu("Options");
 		optionMenu.setMnemonic(KeyEvent.VK_O);
@@ -475,16 +466,16 @@ public class CheckersGUI extends Frame implements ActionListener, ItemListener,
 
 	@Override
 	public void gameOver(CheckersGame game, BlockOccupant player) {
-		
+
 		BufferedImage image = null;
-		if(player == BlockOccupant.PLAYER){
+		if (player == BlockOccupant.PLAYER) {
 			image = ThemeManager.getThemeManager().getImage("gameover-p1");
-		} else if(player == BlockOccupant.PLAYER2){
+		} else if (player == BlockOccupant.PLAYER2) {
 			image = ThemeManager.getThemeManager().getImage("gameover-p2");
 		} else {
 			return;
 		}
-		boardCanvas.addDrawable("gameover", new Graphic("gameover", image, 0, 0,
-				new Dimension(image.getWidth(), image.getHeight()), 4));
+		boardCanvas.addDrawable("gameover", new Graphic("gameover", image, 0,
+				0, new Dimension(image.getWidth(), image.getHeight()), 4));
 	}
 }

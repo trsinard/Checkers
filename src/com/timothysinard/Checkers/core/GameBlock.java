@@ -1,4 +1,5 @@
 package com.timothysinard.Checkers.core;
+
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -23,7 +24,7 @@ public class GameBlock implements Drawable {
 	private int pos_y;
 	private int layerZ;
 	private Dimension newSize;
-	private Dimension originalSize;
+	private final Dimension originalSize;
 
 	public GameBlock(String id, BlockOccupant occupant, int loc_x, int loc_y) {
 		this.id = id;
@@ -31,7 +32,6 @@ public class GameBlock implements Drawable {
 		this.king = false;
 		this.selected = false;
 		this.hover = false;
-		this.highlightAsTarget = false;
 		this.highlightAsTarget = false;
 		this.disabled = false;
 		this.loc_x = loc_x;
@@ -74,19 +74,20 @@ public class GameBlock implements Drawable {
 	public boolean isHover() {
 		return hover;
 	}
-	
-	public boolean isHighlightAsMovable(){
+
+	public boolean isHighlightAsMovable() {
 		return highlightAsMove;
 	}
-	
-	public boolean isHighlightAsTarget(){
+
+	public boolean isHighlightAsTarget() {
 		return highlightAsTarget;
 	}
-	
-	public boolean isDisabled(){
+
+	public boolean isDisabled() {
 		return disabled;
 	}
 
+	@Override
 	public String getID() {
 		return id;
 	}
@@ -98,8 +99,9 @@ public class GameBlock implements Drawable {
 	public Dimension getNewSize() {
 		return newSize;
 	}
-	
-	public int getZ(){
+
+	@Override
+	public int getZ() {
 		return layerZ;
 	}
 
@@ -114,12 +116,12 @@ public class GameBlock implements Drawable {
 	public void setGridY(int loc_y) {
 		this.loc_y = loc_y;
 	}
-	
-	public void setPosX(int x){
+
+	public void setPosX(int x) {
 		this.pos_x = x;
 	}
-	
-	public void setPosY(int y){
+
+	public void setPosY(int y) {
 		this.pos_y = y;
 	}
 
@@ -141,7 +143,7 @@ public class GameBlock implements Drawable {
 		this.hover = bool;
 
 	}
-	
+
 	public void setHighlightAsMovable(boolean bool) {
 		if (occupant == BlockOccupant.NULL || occupant == BlockOccupant.EMPTY) {
 			return;
@@ -149,17 +151,17 @@ public class GameBlock implements Drawable {
 		this.highlightAsMove = bool;
 	}
 
-	public void setHighlightAsTarget(boolean bool){
-		if (occupant == BlockOccupant.NULL){
+	public void setHighlightAsTarget(boolean bool) {
+		if (occupant == BlockOccupant.NULL) {
 			return;
 		}
 		this.highlightAsTarget = bool;
 	}
-	
-	public void setDisabled(boolean bool){
+
+	public void setDisabled(boolean bool) {
 		this.disabled = bool;
 	}
-	
+
 	public void setOccupant(BlockOccupant occupant) {
 		this.occupant = occupant;
 	}
@@ -167,8 +169,8 @@ public class GameBlock implements Drawable {
 	public void setNewSize(Dimension size) {
 		this.newSize = size;
 	}
-	
-	public void setZ(int z){
+
+	public void setZ(int z) {
 		this.layerZ = z;
 	}
 
@@ -198,7 +200,7 @@ public class GameBlock implements Drawable {
 					(int) (Math.round(scaledHeight)));
 			this.pos_x = (int) Math.round(scaledWidth * loc_x);
 			this.pos_y = (int) Math.round(scaledHeight * loc_y);
-			
+
 			g.drawImage(image, pos_x, pos_y, (int) Math.round(scaledWidth),
 					(int) Math.round(scaledHeight), null);
 			image = tm.getImage("block-selected");
@@ -206,9 +208,8 @@ public class GameBlock implements Drawable {
 				g.drawImage(image, pos_x, pos_y, (int) Math.round(scaledWidth),
 						(int) Math.round(scaledHeight), null);
 			}
-		} 
-		
-		
+		}
+
 		image = tm.getImage("block-available");
 		scaledWidth = image.getWidth() * sd.getScaleRatio();
 		scaledHeight = image.getHeight() * sd.getScaleRatio();
@@ -216,25 +217,29 @@ public class GameBlock implements Drawable {
 				(int) (Math.round(scaledHeight)));
 		this.pos_x = (int) Math.round(scaledWidth * loc_x);
 		this.pos_y = (int) Math.round(scaledHeight * loc_y);
-		if(image != null && isHighlightAsMovable()){
-			g.drawImage(image, pos_x, pos_y, (int) Math.round(scaledWidth), (int) Math.round(scaledHeight), null);
+		if (image != null && isHighlightAsMovable()) {
+			g.drawImage(image, pos_x, pos_y, (int) Math.round(scaledWidth),
+					(int) Math.round(scaledHeight), null);
 		}
-		
+
 		image = tm.getImage("block-target");
-		if(image != null && isHighlightAsTarget()) {
-			g.drawImage(image, pos_x, pos_y, (int) Math.round(scaledWidth), (int) Math.round(scaledHeight), null);
+		if (image != null && isHighlightAsTarget()) {
+			g.drawImage(image, pos_x, pos_y, (int) Math.round(scaledWidth),
+					(int) Math.round(scaledHeight), null);
 		}
-		
+
 		image = tm.getImage("block-hover");
-		if(image != null && isHover()) {
-			g.drawImage(image, pos_x, pos_y, (int) Math.round(scaledWidth), (int) Math.round(scaledHeight), null);
+		if (image != null && isHover()) {
+			g.drawImage(image, pos_x, pos_y, (int) Math.round(scaledWidth),
+					(int) Math.round(scaledHeight), null);
 		}
-		
+
 		image = tm.getImage("block-disabled");
-		if(image != null && isDisabled()){
-			g.drawImage(image, pos_x, pos_y, (int) Math.round(scaledWidth), (int) Math.round(scaledHeight), null);
+		if (image != null && isDisabled()) {
+			g.drawImage(image, pos_x, pos_y, (int) Math.round(scaledWidth),
+					(int) Math.round(scaledHeight), null);
 		}
-		
+
 	}
 
 	@Override
@@ -244,17 +249,20 @@ public class GameBlock implements Drawable {
 	}
 
 	public GameBlock copy() {
-		GameBlock copy = new GameBlock(this.id, this.occupant, this.loc_x, this.loc_y);
+		GameBlock copy = new GameBlock(this.id, this.occupant, this.loc_x,
+				this.loc_y);
 		copy.setHover(this.isHover());
 		copy.setKing(this.isKing());
 		copy.setNewSize(this.getNewSize());
 		copy.setSelected(this.isSelected());
 		return copy;
 	}
-	
-	public String toString(){
-		String str =  "[" + occupant.getStringValue() + "-(" + loc_x + ", " + loc_y + ")]";
-		if(isKing()){
+
+	@Override
+	public String toString() {
+		String str = "[" + occupant.getStringValue() + "-(" + loc_x + ", "
+				+ loc_y + ")]";
+		if (isKing()) {
 			str = "K" + str;
 		}
 		return str;

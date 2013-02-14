@@ -2,14 +2,14 @@ package com.timothysinard.Checkers.core;
 
 /**
  * CheckersBoard object class which extends Board
- *
+ * 
  */
 public class CheckersBoard extends Board {
 
 	public CheckersBoard() {
-		//Create 8x8 board
+		// Create 8x8 board
 		super(8, 8);
-		//Even horizontal-blocks null?
+		// Even horizontal-blocks null?
 		boolean null_even_x;
 
 		// Nullify unusable blocks
@@ -46,9 +46,7 @@ public class CheckersBoard extends Board {
 
 	/**
 	 * Create and return copy of this instance of CheckersBoard
-	 *<b>Preconditions:</b> None
-	 *<b>Postconditions:</b> Creates and returns new replica.
-	 *<b>Throws:</b> None
+	 * 
 	 */
 	public CheckersBoard copy() {
 		CheckersBoard newBoard = new CheckersBoard();
@@ -61,6 +59,7 @@ public class CheckersBoard extends Board {
 		return newBoard;
 	}
 
+	@Override
 	public String toString() {
 		return super.toString();
 	}

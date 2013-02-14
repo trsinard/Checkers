@@ -90,6 +90,13 @@ public class GraphicCanvas implements Drawable {
 		return layerZ;
 	}
 
+	/**
+	 * Remove drawable matching given ID from draw-collection. If found, removed
+	 * and returns true. If not found, returns false.
+	 * 
+	 * @param id
+	 * @return
+	 */
 	public boolean removeDrawable(String id) {
 		for (Drawable d : drawItems) {
 			if (d.getID().equals(id)) {
@@ -100,6 +107,13 @@ public class GraphicCanvas implements Drawable {
 		return false;
 	}
 
+	/**
+	 * Removes drawable matching given Drawable item from draw-collection. If
+	 * found, removed and returns true. If not found, returns false.
+	 * 
+	 * @param d
+	 * @return
+	 */
 	public boolean removeDrawable(Drawable d) {
 		return drawItems.remove(d);
 	}
@@ -126,8 +140,6 @@ public class GraphicCanvas implements Drawable {
 	/**
 	 * Get and return reference to the recent screen-data object.
 	 * 
-	 * <b>Preconditions:</b> None <b>Postconditions:</b> Returns reference to
-	 * recent screen-data object. <b>Throws:</b> None
 	 */
 	public ScreenData getRecentScreenData() {
 		return this.recentScreenData;
