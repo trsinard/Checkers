@@ -6,7 +6,7 @@ package com.timothysinard.Checkers.gui;
  */
 public class ScreenData {
 
-	public static final String BUILD_MODEL = "1.0.4B";
+	public static final String BUILD_MODEL = "1.0.0";
 	// Original height and width of the screen
 	private final int originalWidth;
 	private final int originalHeight;
